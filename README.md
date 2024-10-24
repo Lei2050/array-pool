@@ -1,4 +1,4 @@
-# PriorityQueue
+# array-pool
 
 基于数组的对象池，目标是极大减少gc扫描时间。非线程安全。
 

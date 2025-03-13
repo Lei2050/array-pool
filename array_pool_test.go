@@ -38,6 +38,8 @@ func TestArrayPool(t *testing.T) {
 	sttAp.Free(id2)
 	fmt.Println("sttAp:", sttAp)
 
+	fmt.Println("==================")
+
 	sttAp.Alloc()
 	sttAp.Alloc()
 	sttAp.Alloc()
@@ -51,11 +53,13 @@ func TestArrayPool(t *testing.T) {
 	sttAp.Alloc()
 	fmt.Println("sttAp:", sttAp)
 
+	fmt.Println("==================")
+
 	sttAp.Free(1)
 	sttAp.Free(1)
 	sttAp.Free(1)
 	sttAp.Free(1)
 	sttAp.Free(1)
 	fmt.Println("sttAp:", sttAp)
-	sttAp.Free(9)
+	// sttAp.Free(9) //panic
 }

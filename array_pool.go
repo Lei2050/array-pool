@@ -13,9 +13,7 @@ func New[T any](cap int) *ArrayPool[T] {
 	if cap < 0 {
 		panic("cap is less than zero")
 	}
-	if cap == 0 {
-		cap = 1
-	}
+
 	cap++
 	return &ArrayPool[T]{
 		arr:   make([]T, cap),

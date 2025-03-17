@@ -77,3 +77,13 @@ func (p *Pool[T]) Clear() {
 func (p *Pool[T]) Count() int {
 	return p.items.Count() - len(p.frees)
 }
+func (p *Pool[T]) Get(id int) T {
+	return p.items.Get(id)
+}
+
+// Make sure not to retain the pointer returned by this function for a prolonged time,
+// for example, by saving it within a heap-allocated object;
+// use it only temporarily on the current stack.
+func (p *Pool[T]) GetRef(id int) *T {
+	return p.items.GetRef(id)
+}

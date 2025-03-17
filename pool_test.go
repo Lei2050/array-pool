@@ -54,4 +54,7 @@ func TestPool(t *testing.T) {
 		ptr.Val = rand.Int() % 10000
 	}
 	t.Logf("sttAl: %+v, %+v\n", sttAp, sttAp.items)
+
+	sttAp.Clear()
+	t.Logf("sttAl: %+v, %+v\n", sttAp, sttAp.items)
 }

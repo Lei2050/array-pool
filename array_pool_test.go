@@ -10,7 +10,7 @@ type TestArrayPoolStruct struct {
 }
 
 func TestArrayPool(t *testing.T) {
-	sttAp := New[TestArrayPoolStruct](0)
+	sttAp := NewArrayPool[TestArrayPoolStruct](0)
 	id := sttAp.Alloc()
 	fmt.Println(id, sttAp.Get(id))
 	id1 := sttAp.Alloc()

@@ -2,14 +2,21 @@ package arraypool
 
 import "fmt"
 
+// ArrayPool is a generic array pool that manages the allocation and deallocation of T.
+// The first element of the array is a sentinel and is not allocated.
 type ArrayPool[T any] struct {
-	arr   []T //Arr[0]是哨兵（sentinel），不会分配出去
-	alloc int //下一次分配哪个
-	// free  []int
+	// arr stores the actual array elements. arr[0] is a sentinel and won't be allocated.
+	arr []T
+	// alloc indicates the next position to allocate.
+	alloc int
+	// free keeps track of the freed indices.
 	free map[int]struct{}
 }
 
-func New[T any](cap int) *ArrayPool[T] {
+// NewArrayPool creates a new ArrayPool with the specified capacity.
+// If the capacity is less than zero, it panics.
+// The actual capacity is increased by one to accommodate the sentinel.
+func NewArrayPool[T any](cap int) *ArrayPool[T] {
 	if cap < 0 {
 		panic("cap is less than zero")
 	}
@@ -22,6 +29,9 @@ func New[T any](cap int) *ArrayPool[T] {
 	}
 }
 
+// nextCap calculates the new capacity when the array pool needs to grow.
+// If the old capacity is less than 256, it doubles the capacity.
+// Otherwise, it increases the capacity by a certain factor.
 func (ap *ArrayPool[T]) nextCap(oldCap int) int {
 	doubleCap := oldCap + oldCap
 	const threshold = 256
@@ -31,6 +41,8 @@ func (ap *ArrayPool[T]) nextCap(oldCap int) int {
 	return oldCap + ((oldCap + 3*threshold) >> 2)
 }
 
+// grow increases the capacity of the array pool.
+// It creates a new array with the calculated capacity and copies the old elements.
 func (ap *ArrayPool[T]) grow() {
 	newCap := ap.nextCap(len(ap.arr))
 	newArray := make([]T, newCap)
@@ -38,7 +50,9 @@ func (ap *ArrayPool[T]) grow() {
 	ap.arr = newArray
 }
 
-// return >=1
+// Alloc allocates an index from the array pool.
+// It returns an index greater than or equal to 1.
+// If there is a free index, it uses that; otherwise, it grows the pool if necessary.
 func (ap *ArrayPool[T]) Alloc() int {
 	if ap.alloc < len(ap.arr) {
 		id := ap.alloc
@@ -46,11 +60,7 @@ func (ap *ArrayPool[T]) Alloc() int {
 		return id
 	}
 
-	// if len(ap.free) > 0 {
-	// 	res := ap.free[len(ap.free)-1]
-	// 	ap.free = ap.free[:len(ap.free)-1]
-	// 	return res
-	// }
+	// Check if there are any freed indices
 	if len(ap.free) > 0 {
 		for k := range ap.free {
 			delete(ap.free, k)
@@ -63,12 +73,17 @@ func (ap *ArrayPool[T]) Alloc() int {
 	return ap.Alloc()
 }
 
+// Free marks an index as free for future allocation.
+// If the index is invalid, it panics.
+// If the index is the last allocated one, it simply decrements the allocation pointer.
+// Otherwise, it adds the index to the free list.
 func (ap *ArrayPool[T]) Free(id int) {
 	if id <= 0 || id >= ap.alloc {
 		panic(fmt.Errorf("free invalid id:%d, next alloc pos:%d", id, ap.alloc))
 	}
 
-	ap.arr[id] = ap.arr[0] //重置为零值，防止内存泄露
+	// Reset the element to the zero value to prevent memory leaks
+	ap.arr[id] = ap.arr[0]
 
 	if id == ap.alloc-1 {
 		ap.alloc--
@@ -88,6 +103,9 @@ func (ap *ArrayPool[T]) Get(id int) T {
 	return ap.arr[id]
 }
 
+// Make sure not to retain the pointer returned by this function for a prolonged time,
+// for example, by saving it within a heap-allocated object;
+// use it only temporarily on the current stack.
 func (ap *ArrayPool[T]) GetRef(id int) *T {
 	return &ap.arr[id]
 }
